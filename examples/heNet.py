@@ -30,8 +30,14 @@ def mse(y_true, y_pred):
 def mse_prime(y_true, y_pred):
     return 2 * (y_pred - y_true) / y_true.size
 
+def binary_cross_entropy(y_true, y_pred):
+    return y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred)
+
+def binary_cross_entropy_prime(y_true, y_pred):
+    return y_pred - y_true
+
 def cross_entropy(y_true, y_pred):
-    return np.mean(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
+    return -sum([y_true[i]*np.log(y_pred[i]) for i in range(len(y_true))])
 
 def cross_entropy_prime(y_true, y_pred):
     return y_pred - y_true
@@ -51,8 +57,8 @@ class BaseLayer():
 class FullyConnectedLayer(BaseLayer):
 
     def __init__(self, input_size, output_size):
-        self.weights = np.random.rand(input_size, output_size) * 0.5
-        self.bias = np.random.rand(1, output_size) * 0.5
+        self.weights = np.random.rand(input_size, output_size) - 0.5
+        self.bias = np.random.rand(1, output_size) - 0.5
 
     def forward(self, input_data):
         self.input = input_data
@@ -82,7 +88,7 @@ class ActivationLayer(BaseLayer):
         return self.activation_prime(self.input) * output_error
 
 class Network:
-    def __init__(self, debug):
+    def __init__(self, debug=None):
         self.layers = []
         self.loss = None
         self.loss_prime = None
@@ -124,5 +130,5 @@ class Network:
                     error = layer.backward(error, learning_rate)
 
             err /= samples
-            if self.debug and i % 50 == 0:
+            if self.debug != None and i % self.debug == 0:
                 print('epoch %d/%d   error=%f' % (i+1, epochs, err))
