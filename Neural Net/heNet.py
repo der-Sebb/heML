@@ -88,11 +88,12 @@ class ActivationLayer(BaseLayer):
         return self.activation_prime(self.input) * output_error
 
 class Network:
-    def __init__(self, debug=None):
+    def __init__(self, debug=None, encrypted_training=False):
         self.layers = []
         self.loss = None
         self.loss_prime = None
         self.debug = debug
+        self.encrypted_training = encrypted_training
 
     def add(self, layer):
         self.layers.append(layer)
@@ -123,12 +124,14 @@ class Network:
                 for layer in self.layers:
                     output = layer.forward(output)
 
-                err += self.loss(y_train[j], output)
+                if not self.encrypted_training:
+                    err += self.loss(y_train[j], output)
 
                 error = self.loss_prime(y_train[j], output)
                 for layer in reversed(self.layers):
                     error = layer.backward(error, learning_rate)
 
-            err /= samples
-            if self.debug != None and i % self.debug == 0:
-                print('epoch %d/%d   error=%f' % (i+1, epochs, err))
+            if not self.encrypted_training:
+                err /= samples
+                if self.debug != None and i % self.debug == 0:
+                    print('epoch %d/%d   error=%f' % (i+1, epochs, err))
