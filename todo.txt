@@ -1,8 +1,5 @@
 HeartFailure
     Training durch verschlüsselte Daten
-    Vergleich mit Standard PyTorch Modell
-        Mögliches optimieren des HE Modells
-        Cross Validation
 
 XOR
     Funktion Sampling
