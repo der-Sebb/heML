@@ -43,11 +43,18 @@ def cross_entropy(y_true, y_pred):
 def cross_entropy_prime(y_true, y_pred):
     return y_pred - y_true
 
-def decrypt_weights(weights):
-    return np.array([[value.decrypt()[0] for value in weight] for weight in weights])
+def encrypt(matrix, context):
+    return np.array([[ts.ckks_vector(context, [value]) for value in column] for column in matrix])
 
-def decrypt_bias(bias):
-    return np.array([[value.decrypt()[0] for value in weight] for weight in bias])
+def encrypt_Label(vector, context):
+    return np.array([ts.ckks_vector(context, [value]) for value in vector])
+
+def decrypt(matrix):
+    return np.array([[column.decrypt()[0] for column in row] for row in matrix])
+
+def recrypt(matrix, context):
+    e_value = decrypt(matrix)
+    return encrypt(e_value, context)
 
 class BaseLayer():
 
@@ -58,7 +65,7 @@ class BaseLayer():
     def forward(self, input):
         pass
 
-    def backward(self, output_error, learning_rate, decrypt_model=False):
+    def backward(self, output_error, learning_rate):
         pass
 
 class FullyConnectedLayer(BaseLayer):
@@ -77,8 +84,38 @@ class FullyConnectedLayer(BaseLayer):
         weights_error = np.dot(self.input.T, output_error)
 
         self.weights = self.weights - (learning_rate * weights_error)
-        self.bias = self.bias - (learning_rate * output_error)
+        self.bias = self.bias - (learning_rate * np.sum(output_error, axis=0, keepdims=True))
         return input_error
+
+class EncryptedFullyConnectedLayer(BaseLayer):
+
+    def __init__(self, input_size, output_size, context):
+        self.weights = np.random.rand(input_size, output_size) - 0.5
+        self.bias = np.random.rand(1, output_size) - 0.5
+        self.context = context
+
+    def forward(self, input_data):
+        self.input = input_data
+        self.output = np.dot(self.input, self.weights) + self.bias
+        return self.output
+
+    def encrypted_forward(self, input_data):
+        self.input = input_data
+        self.output = np.dot(self.input, self.weights) + self.bias
+        return recrypt(self.output,self.context)
+
+    def backward(self, output_error, learning_rate):
+        weights_error = np.dot(self.input.T, output_error)
+        weights_error = recrypt(weights_error,self.context)
+
+        self.weights = self.weights - (learning_rate * weights_error)
+        self.weights = recrypt(self.weights,self.context)
+   
+        self.bias = self.bias - (learning_rate * np.sum(output_error, axis=0, keepdims=True))
+        self.bias = recrypt(self.bias,self.context)
+
+        input_error = np.dot(output_error, self.weights.T)
+        return recrypt(input_error,self.context)
 
 class ActivationLayer(BaseLayer):
 
@@ -91,8 +128,30 @@ class ActivationLayer(BaseLayer):
         self.output = self.activation(self.input)
         return self.output
 
-    def backward(self, output_error, learning_rate, decrypt_model=False):
+    def backward(self, output_error, learning_rate):
         return self.activation_prime(self.input) * output_error
+
+class EncryptedActivationLayer(BaseLayer):
+
+    def __init__(self, activation, activation_prime, context):
+        self.activation = activation
+        self.activation_prime = activation_prime
+        self.context = context
+
+    def forward(self, input_data):
+        self.input = input_data
+        self.output = self.activation(self.input)
+        return self.output
+
+    def encrypted_forward(self, input_data):
+        self.input = input_data
+        output = self.activation(self.input)
+        return recrypt(output,self.context)
+
+    def backward(self, output_error, learning_rate):
+        activation_error = self.activation_prime(self.input)
+        output = recrypt(activation_error,self.context) * output_error
+        return recrypt(output,self.context)
 
 class Network:
     def __init__(self, debug=None, encrypted_training=False, interactive=False):
@@ -122,96 +181,52 @@ class Network:
 
         return result
 
-    def fit(self, x_train, y_train, epochs, learning_rate):
+    def fit(self, x_train, y_train, epochs, learning_rate, minibatch):
         samples = len(x_train)
 
         for i in range(epochs):
             err = 0
-            for j in range(samples):
-                output = x_train[j]
+            for j in range(0, x_train.shape[0], minibatch):
+                output = np.array([[values for values in np.squeeze(row)] for row in x_train[j:j+minibatch]])
                 for layer in self.layers:
                     output = layer.forward(output)
 
-                err += self.loss(y_train[j], output)
+                label = np.array([row[0] for row in y_train[j:j+minibatch]])
 
-                error = self.loss_prime(y_train[j], output)
+                error = self.loss_prime(label, output)
                 for layer in reversed(self.layers):
                     error = layer.backward(error, learning_rate)
 
             err /= samples
             if self.debug != None and i % self.debug == 0:
-                print(f'epoch {i+1}/{epochs}   error={err}')
+                print(f'epoch {i+1}/{epochs}')
     
-    def send_receive_weights(self, context):
-        if self.interactive and self.encrypted_training:
-            for layer in self.layers:
-                if type(layer) == FullyConnectedLayer:
-                    weights = [[value.decrypt()[0] for value in e_weight] for e_weight in layer.weights]
-                    layer.weights = np.array([[ts.ckks_vector(context, [value]) for value in weight] for weight in weights])
+    def crypt_fit(self, x_train, y_train, epochs, learning_rate, minibatch, context):
 
-                    bias = [[weight.decrypt()[0] for weight in value] for value in layer.bias]
-                    layer.bias = np.array([[ts.ckks_vector(context, [weight]) for weight in value] for value in bias])
-
-    def encrypt(self, context):
-        if self.interactive and self.encrypted_training:
-            for layer in self.layers:
-                if type(layer) == FullyConnectedLayer:
-                    layer.weights = np.array([[ts.ckks_vector(context, [value]) for value in weight] for weight in layer.weights])
-                    layer.bias = np.array([[ts.ckks_vector(context, [weight]) for weight in value] for value in layer.bias])
-
-    def decrypt(self):
-       if self.interactive and self.encrypted_training:
-            for layer in self.layers:
-                if type(layer) == FullyConnectedLayer:
-                    layer.weights = decrypt_weights(layer.weights)
-                    layer.bias = decrypt_bias(layer.bias)
-
-    def crypt_data_fit(self, x_train, y_train, epochs, learning_rate, crypt_context=None):
-        samples = len(x_train)
+        for layer in self.layers:
+            if type(layer) == EncryptedFullyConnectedLayer:
+                layer.weights = encrypt(matrix=layer.weights, context=context)
+                layer.bias = encrypt(matrix=layer.bias, context=context)
 
         for i in range(epochs):
-            for j in range(samples):
-                output = np.array([[ts.ckks_vector(crypt_context, [value]) for value in np.squeeze(x_train[j])]])
-                label = np.array([[ts.ckks_vector(crypt_context, [np.squeeze(y_train[j])])]])
+            for j in range(0, x_train.shape[0], minibatch):
+                output = np.array([[values for values in np.squeeze(row)] for row in x_train[j:j+minibatch]])
+                output = encrypt(output,context)
 
                 for layer in self.layers:
-                    output = layer.forward(output)
-                print("Forward finished")
+                    output = layer.encrypted_forward(output)
 
-                error = self.loss_prime(label, output)
-
-                for layer in reversed(self.layers):
-                    error = layer.backward(error, learning_rate, decrypt_model=True)
-                print("Backward finished")
-                
-            if self.debug != None and i % self.debug == 0:
-                print(f"Finished epoch {i}")
-
-        print("Decrypted weights")
-
-    def crypt_model_fit(self, x_train, y_train, epochs, learning_rate, crypt_context=None):
-        samples = len(x_train)
-
-        self.encrypt(crypt_context)
-        print("Encrypted weights")
-
-        for i in range(epochs):
-            for j in range(samples):
-                output = np.array([[ts.ckks_vector(crypt_context, [value]) for value in np.squeeze(x_train[j])]])
-                label = np.array([[ts.ckks_vector(crypt_context, [np.squeeze(y_train[j])])]])
-
-                for layer in self.layers:
-                    output = layer.forward(output)
-                print("Forward finished")
+                label = np.array([row[0] for row in y_train[j:j+minibatch]])
+                label = encrypt(label,context)
 
                 error = self.loss_prime(label, output)
                 for layer in reversed(self.layers):
                     error = layer.backward(error, learning_rate)
-                print("Backward finished")
-                
-                self.send_receive_weights(crypt_context)
-            if self.debug != None and i % self.debug == 0:
-                print(f"Finished epoch {i}")
 
-        self.decrypt()
-        print("Decrypted weights")
+            if self.debug != None and i % self.debug == 0:
+                print(f'epoch {i+1}/{epochs}')
+
+        for layer in self.layers:
+            if type(layer) == EncryptedFullyConnectedLayer:
+                layer.weights = decrypt(matrix=layer.weights)
+                layer.bias = decrypt(matrix=layer.bias)
