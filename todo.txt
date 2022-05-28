@@ -1,10 +1,13 @@
+Iris
+    Vergleich der interaktiven Variante mit nur einmal/zweimal recrypt pro Sample
+
+Allgemein
+    Bootstrapping und Ent-Verschlüsseln Vergleich
+        Nicht interaktiv bzw interaktiv
+
 HeartFailure
     Training durch verschlüsselte Daten
-
-XOR
-    Funktion Sampling
+        Nicht interaktiv 
 
 Zukunft
-    Bootstrapping
-    Training in wenigen Schritten
-        Lineare Regression so optimieren damit es mithalten kann
+    Funktion Sampling
