@@ -230,3 +230,31 @@ class Network:
             if type(layer) == EncryptedFullyConnectedLayer:
                 layer.weights = decrypt(matrix=layer.weights)
                 layer.bias = decrypt(matrix=layer.bias)
+            
+    def benchmark_crypt_fit(self, x_train, y_train, epochs, learning_rate, minibatch, context):
+
+        for layer in self.layers:
+            if type(layer) == EncryptedFullyConnectedLayer:
+                layer.weights = encrypt(matrix=layer.weights, context=context)
+                layer.bias = encrypt(matrix=layer.bias, context=context)
+
+        for i in range(epochs):
+            for j in range(0, x_train.shape[0], minibatch):
+                output = np.array([[values for values in np.squeeze(row)] for row in x_train[j:j+minibatch]])
+
+                for layer in self.layers:
+                    output = layer.encrypted_forward(output)
+
+                label = np.array([row[0] for row in y_train[j:j+minibatch]])
+
+                error = self.loss_prime(label, output)
+                for layer in reversed(self.layers):
+                    error = layer.backward(error, learning_rate)
+
+            if self.debug != None and i % self.debug == 0:
+                print(f'epoch {i+1}/{epochs}')
+
+        for layer in self.layers:
+            if type(layer) == EncryptedFullyConnectedLayer:
+                layer.weights = decrypt(matrix=layer.weights)
+                layer.bias = decrypt(matrix=layer.bias)

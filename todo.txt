@@ -1,13 +1,2 @@
-Iris
-    Vergleich der interaktiven Variante mit nur einmal/zweimal recrypt pro Sample
-
-Allgemein
-    Bootstrapping und Ent-Verschlüsseln Vergleich
-        Nicht interaktiv bzw interaktiv
-
-HeartFailure
-    Training durch verschlüsselte Daten
-        Nicht interaktiv 
-
-Zukunft
-    Funktion Sampling
+Benchmarks für Inferenz und Training
+    Auf dem Iris Datensatz
