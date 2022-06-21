@@ -15,7 +15,7 @@ Dies kann anhand einer kleinen [Linearen Regression Aufgabe](Inferenz/Inferenz_L
 
 2. **Training**
 Das Training bezieht sich im Maschinellen Lernen auf die Erstellung oder Verbesserung von Modellen, welche wiederum in der Inferenz genutzt werden können. In Verbindung mit Verschlüsselung liegen die Daten für das Training nur in verschlüsselter Form vor.<br />
-Dies wurde ebenfalls zuerst als [Training einer Linearer Regression](Training/Training_Lineare_Regression_iris.ipynb) ausprobiert, um mögliche Probleme und Hindernisse Im Training zu identifizieren. Der Bogen zu den Neuronalen Netzen wurde mit dem [Training des XOR Gatters](Training/Training_Neuronale_Netze_XOR.ipynb) geschlagen. Weiterführende Beispiel gibt es noch weitere Beispiele zum [Training von Neuronalen Netze](Training/Training_Neuronale_Netze.ipynb) durch verschlüsselte Daten.
+Dies wurde ebenfalls zuerst als [Training einer Linearer Regression](Training/Training_Lineare_Regression_iris.ipynb) ausprobiert, um mögliche Probleme und Hindernisse Im Training zu identifizieren. Der Bogen zu den Neuronalen Netzen wurde mit dem [Training des XOR Gatters](Training/Training_Neuronale_Netze_XOR.ipynb) geschlagen. Weiterführende gibt es noch Beispiele zum [Training von Neuronalen Netze](Training/Training_Neuronale_Netze.ipynb) durch verschlüsselte Daten.
 
 3. **Sensitiver Datensatz**
 Um nun das gelernt zu übertragen auf einen relevanten Anwendungsfall, in welchem Verschlüsselung und Privatsphäre wichtig ist, wurde ein öffentlicher Herzversagen Datensatz von Kaggle ausgewählt. Darauf wurden verschiedene [Modelle erstellt und die Inferenz sowie das Training](Neuronale_Netze_Herzversagen.ipynb) getestet.
@@ -23,6 +23,9 @@ Um nun das gelernt zu übertragen auf einen relevanten Anwendungsfall, in welche
 4. **Vergleich**
 Zur Evaluation werden [normale und verschlüsselte Inferenz/Training](Neuronale_Netze_Vergleich.ipynb) verglichen.
 
-Fazit
+Zusammenfassung
 ---
-Ja ist toll gell
+In dieser Projektarbeit wurde sich mit dem Einsatz von homomorpher Verschlüsselung im Maschinellen Lernen beschäftigt. Getestet wurden anhand von Beispiel der Linearen Regression und den Neuronalen Netzen.<br />
+Die Inferenz in der Linearen Regression kann ohne Probleme durchgeführt werden. Anders sieht es bei den Neuronalen Netze aus, die eine spezielle Struktur brauchen, damit alle Operationen durch die limitierten arithmetischen Operationen ausgeführt werden können. Das Training der Linearen Regression hat gezeigt, dass um die klassische iteratitive Herangehensweise im Maschniellen Lernen einzusetzen eine Methode gebraucht wird, welche das Rauschen in verschlüsselten Daten mindert. Ansonsten ist das Berechnen passender Gewichte für das Modell eingeschränkt. Dies ist bei den neuronalen Netzen nicht anders und wird durch die Größe des Netzes zum Beispiel im Deep Learning verstärkt.<br />
+Die Genauigkeit bei der Inferenz und dem Training weicht zwischen der unverschlüsselten und verschlüsselte Variante nicht voneinander ab, solange die Architektur in beiden Fällen gleich war. Das heißt die verschlüsselte Daten haben nicht direkt einen Einfluss auf die Performance aber sorgen dafür, dass Konzepte umgedacht werden müssen, um kompatibel zu sein. Die Laufzeit sowohl in der Inferenz als auch während dem Training ist merklich länger als vergleichbare unverschlüsselten Modelle. Dies kann wiederum die Suche von passenden Architekturen und Hyperparametern beeinflussen, da das Austesten lange dauert.<br />
+Insgesamt kann man aber schließen, dass die homomorphe Verschlüsselung viel Potential hat im Maschinellen Lernen und könnte bereits für verschlüsselte Inferenz und in manchen Fällen auch für verschlüsseltes Training eingesetzt werden. Nur sind weitere Optimierungen in den Verschlüsselungsmethoden oder den Architekturen und verwendeten Methoden im Maschinellen Lernen notwendig, um es einsatzfähig in alltäglichen Umfeldern zu machen.
