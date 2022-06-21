@@ -3,7 +3,7 @@ Datenschutzfreundliche künstliche Intelligenz mithilfe von homomorpher Verschl�
 
 Motivation
 ---
-Ist wichtig und so weiter
+In der Welt der künstlichen Intelligenz beziehungsweise des Maschninellen Lernens sind Daten die Währung. Nur ist das in vielen Fällen ein Nachteile für die Menschenheit, wenn zum Beispiel personenbezogene Daten von Firmen ausgewertet werden. Dabei ist die Auswertung nicht immer zwangsweiße ein negativer Vorgang und kann beitragen ein Modell zu erstellen, welches einen wichtigen Beitrag in der Medizin liefern kann. Ein weiterer Fall kann sein, wenn eine Firma nicht die Mittel besitzt ein Modell mit ihren Daten zu erstellen und deswegen Hilfe von einer Dritten Instanz benötigt, in Form von Recheneinheiten. Deswegen ist es von Vorteil einen Weg zu wählen personenbezogene oder proprietäre Daten verschlüsselt zu verarbeiten. Hierfür kann die sogenannte homomorphe Verschlüsselung verwenden, die es ermöglicht Daten mit einem öffentlichen Schlüssel zu verschlüsseln und auf den verschlüsselten Daten bestimmte arithmetische Operationen auszuführen. Mit einem privaten Schlüssel können die Ergebnisse wieder entschlüsselt werden und somit hat keiner außer dem Besitzer Zugriff zu den Daten.
 
 Inhalt
 ---
@@ -21,7 +21,7 @@ Dies wurde ebenfalls zuerst als [Training einer Linearer Regression](Training/Tr
 Um nun das gelernt zu übertragen auf einen relevanten Anwendungsfall, in welchem Verschlüsselung und Privatsphäre wichtig ist, wurde ein öffentlicher Herzversagen Datensatz von Kaggle ausgewählt. Darauf wurden verschiedene [Modelle erstellt und die Inferenz sowie das Training](Neuronale_Netze_Herzversagen.ipynb) getestet.
 
 4. **Vergleich**
-Zur Evaluation werden noch [normale und verschlüsselte Inferenz/Training](Neuronale_Netze_Vergleich.ipynb) verglichen.
+Zur Evaluation werden [normale und verschlüsselte Inferenz/Training](Neuronale_Netze_Vergleich.ipynb) verglichen.
 
 Fazit
 ---
