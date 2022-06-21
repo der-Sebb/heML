@@ -1,2 +1,0 @@
-Benchmarks für Inferenz und Training
-    Auf dem Iris Datensatz
